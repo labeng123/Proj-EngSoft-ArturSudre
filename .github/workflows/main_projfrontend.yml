@@ -6,7 +6,7 @@ name: Build and deploy Node.js app to Azure Web App - ProjFrontEnd
 on:
   push:
     branches:
-      - Subir_FrontEnd
+      - Main
   workflow_dispatch:
 
 jobs:
