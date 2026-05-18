@@ -62,5 +62,5 @@ jobs:
         with:
           app-name: 'ProjFrontEnd'
           slot-name: 'Production'
-          package: ./build
+          package: ./dist
           
