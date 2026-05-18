@@ -38,4 +38,3 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
-/Frontend/node_modules/
