@@ -6,14 +6,18 @@ name: Build and deploy Node.js app to Azure Web App - ProjFrontEnd
 on:
   push:
     branches:
-      - main
+      - Subir_FrontEnd
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read 
+      
+    defaults:
+      run:
+        working-directory: ./Frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +28,7 @@ jobs:
           node-version: '24.x'
 
       - name: npm install, build, and test
+        # Isso agora vai rodar automaticamente dentro de ./Frontend
         run: |
           npm install
           npm run build --if-present
@@ -33,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: ./Frontend/dist 
 
   deploy:
     runs-on: ubuntu-latest
@@ -51,9 +56,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_04E43DF5DECA4ED782B23A69F7632C97 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D68E43FEB6F847CC87D0434155A887C4 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0978EB581F734BB79892B70BE03A5FEB }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5374A1733AD34F4E8E04E690DE472E77 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EE049D42F801463F9D7A3C28A5FA936F }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DD84679F1D2C4354B3B903C7A9104AEA }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
