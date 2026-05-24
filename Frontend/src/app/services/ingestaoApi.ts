@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Arquivo, ArquivoUploadResponse, Pasta, PastaCreate } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'https://ingestaomod2.azurewebsites.net';
+const API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'http://localhost:8002';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +11,7 @@ export const ingestaoApi = {
   // Get all files for a project
   async getArquivosPorProjeto(projetoId: number): Promise<Arquivo[]> {
     try {
-      const response = await api.get<Arquivo[]>(`/api/arquivos/projeto/${projetoId}`);
+      const response = await api.get<Arquivo[]>(`/api/getarquivos/projeto/${projetoId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching files for project ${projetoId}:`, error);
@@ -27,7 +27,7 @@ export const ingestaoApi = {
       formData.append('projeto_id', projetoId.toString());
       formData.append('file', file);
 
-      const response = await api.post<ArquivoUploadResponse>('/api/arquivos/', formData, {
+      const response = await api.post<ArquivoUploadResponse>(`/api/postarquivos/projeto/${projetoId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
