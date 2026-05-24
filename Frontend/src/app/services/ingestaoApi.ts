@@ -11,7 +11,7 @@ export const ingestaoApi = {
   // Get all files for a project
   async getArquivosPorProjeto(projetoId: number): Promise<Arquivo[]> {
     try {
-      const response = await api.get<Arquivo[]>(`/api/arquivos/projeto/${projetoId}`);
+      const response = await api.get<Arquivo[]>(`/api/getarquivos/projeto/${projetoId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching files for project ${projetoId}:`, error);
@@ -27,7 +27,7 @@ export const ingestaoApi = {
       formData.append('projeto_id', projetoId.toString());
       formData.append('file', file);
 
-      const response = await api.post<ArquivoUploadResponse>('/api/arquivos/', formData, {
+      const response = await api.post<ArquivoUploadResponse>(`/api/postarquivos/projeto/${projetoId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
