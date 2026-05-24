@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Projeto, ProjetoCreate, DeleteResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_GESTAO_API_URL || 'https://gestmicros.azurewebsites.net';
+const API_BASE_URL = import.meta.env.VITE_GESTAO_API_URL || 'https://gestaomod2.azurewebsites.net';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
