@@ -20,6 +20,19 @@ export interface Arquivo {
   tipo?: string;
   tamanho_bytes: number;
   data_ingestao?: string;
+  pasta_id?: number | null;
+}
+
+export interface Pasta {
+  id: number;
+  nome: string;
+  projeto_id: number;
+  data_criacao: string;
+}
+
+export interface PastaCreate {
+  nome: string;
+  projeto_id: number;
 }
 
 export interface ArquivoUploadResponse {
