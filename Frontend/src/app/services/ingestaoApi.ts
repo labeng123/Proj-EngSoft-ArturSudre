@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Arquivo, ArquivoUploadResponse } from '../types';
+import type { Arquivo, ArquivoUploadResponse, Pasta, PastaCreate } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'http://localhost:8002';
 
@@ -85,7 +85,63 @@ export const ingestaoApi = {
     }
   },
 
+  // Pastas
+  async listarPastas(projetoId: number): Promise<Pasta[]> {
+    try {
+      const response = await api.get<Pasta[]>(`/api/pastas/${projetoId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching folders for project ${projetoId}:`, error);
+      return this.getMockPastas(projetoId);
+    }
+  },
+
+  async criarPasta(pasta: PastaCreate): Promise<Pasta> {
+    try {
+      const response = await api.post<{status: string, pasta_id: number}>('/api/pastas', pasta);
+      return {
+        id: response.data.pasta_id,
+        nome: pasta.nome,
+        projeto_id: pasta.projeto_id,
+        data_criacao: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      // Mock response
+      return {
+        id: Date.now(),
+        nome: pasta.nome,
+        projeto_id: pasta.projeto_id,
+        data_criacao: new Date().toISOString()
+      };
+    }
+  },
+
+  async moverArquivo(arquivoId: number, pastaId: number | null): Promise<Arquivo> {
+    try {
+      const url = pastaId !== null 
+        ? `/api/arquivos/${arquivoId}/mover?pasta_id=${pastaId}`
+        : `/api/arquivos/${arquivoId}/mover`;
+      const response = await api.patch<Arquivo>(url);
+      return response.data;
+    } catch (error) {
+      console.error(`Error moving file ${arquivoId}:`, error);
+      throw error;
+    }
+  },
+
   // Mock data for development/preview
+  getMockPastas(projetoId: number): Pasta[] {
+    const key = `mock_pastas_${projetoId}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    const mockData: Pasta[] = [];
+    localStorage.setItem(key, JSON.stringify(mockData));
+    return mockData;
+  },
+
   getMockArquivos(projetoId: number): Arquivo[] {
     const key = `mock_arquivos_${projetoId}`;
     const stored = localStorage.getItem(key);
