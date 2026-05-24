@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Arquivo, ArquivoUploadResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'https://ingest-micros.azurewebsites.net';
+const API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'https://ingestaomod2.azurewebsites.net';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
