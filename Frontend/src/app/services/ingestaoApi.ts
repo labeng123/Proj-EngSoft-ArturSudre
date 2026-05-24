@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Arquivo, ArquivoUploadResponse, Pasta, PastaCreate } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'http://localhost:8002';
+const API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'https://ingestaomod2.azurewebsites.net/';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
