@@ -51,14 +51,14 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_228D382AEE804277A42DC32080781723 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DD3367A26AB14EFAA405DA455BF20726 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_9548565FFCAB4909A3EF5FF044891140 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F57C489AEADB4BA38919DE83AD0FCA11 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_525AAF3C7DC542CB9C6FC2B68AAF9D32 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0D2DCC6A7F08495189FFEBE612D97E57 }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'ProjFrontEnd'
+          app-name: 'Mod2Eng'
           slot-name: 'Production'
           package: ./deploy-package # Faz o deploy apenas do código compilado
