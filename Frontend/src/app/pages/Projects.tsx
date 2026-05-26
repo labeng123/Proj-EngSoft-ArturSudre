@@ -4,10 +4,7 @@ import { Plus, Edit2, Trash2, FolderOpen } from 'lucide-react';
 import { gestaoApi } from '../services/gestaoApi';
 import type { Projeto, ProjetoCreate } from '../types';
 import { formatDate } from '../utils/format';
-
-
 import { toast } from 'sonner';
-
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -25,17 +22,13 @@ export default function Projects() {
     loadProjetos();
   }, []);
 
-
   const loadProjetos = async () => {
     setIsLoading(true);
     try {
       const data = await gestaoApi.getProjetos();
       setProjetos(data);
-
     } catch (error) {
       toast.error('Erro ao carregar projetos');
-
-
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +98,6 @@ export default function Projects() {
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-300">Carregando projetos...</p>
         </div>
-
       </div>
     );
   }
@@ -255,3 +247,5 @@ export default function Projects() {
         </div>
       )}
     </div>
+  );
+}
