@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Projeto, ProjetoCreate, DeleteResponse } from '../types';
 
-let API_BASE_URL = import.meta.env.VITE_GESTAO_API_URL || 'http://localhost:8001';
+let API_BASE_URL = import.meta.env.VITE_GESTAO_API_URL || 'http://gestaomod2.azurewebsites.net';
 
 // Garante que URLs em produção não usem HTTP para evitar erro de Mixed Content
 if (API_BASE_URL.includes('azurewebsites.net') && API_BASE_URL.startsWith('http://')) {
