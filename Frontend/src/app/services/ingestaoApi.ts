@@ -1,10 +1,9 @@
 import axios from 'axios';
 import type { Arquivo, ArquivoUploadResponse, Pasta, PastaCreate } from '../types';
 
-// O Axios agora usará o próprio domínio do Front-end para fazer as requisições,
-// deixando o Vite intercetá-las e atuar como Proxy.
+// Usamos o prefixo configurado no vite.config.ts para o microsserviço de Ingestão
 const api = axios.create({
-  baseURL: '',
+  baseURL: '/api-ingestao',
 });
 
 export const ingestaoApi = {
@@ -50,8 +49,8 @@ export const ingestaoApi = {
 
   // Get download URL for a file
   getDownloadUrl(projetoId: number, arquivoId: number): string {
-    // Atualizado para usar o caminho relativo
-    return `/api/arquivos/download/${projetoId}/${arquivoId}`;
+    // Atualizado para usar o prefixo correto do proxy
+    return `/api-ingestao/arquivos/download/${projetoId}/${arquivoId}`;
   },
 
   // Download file (triggers browser download)
