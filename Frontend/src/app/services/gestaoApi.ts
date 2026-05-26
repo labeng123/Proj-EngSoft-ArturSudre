@@ -1,15 +1,9 @@
 import axios from 'axios';
 import type { Projeto, ProjetoCreate, DeleteResponse } from '../types';
 
-let API_BASE_URL = import.meta.env.VITE_GESTAO_API_URL || 'http://gestaomod2.azurewebsites.net';
-
-// Garante que URLs em produção não usem HTTP para evitar erro de Mixed Content
-if (API_BASE_URL.includes('azurewebsites.net') && API_BASE_URL.startsWith('http://')) {
-  API_BASE_URL = API_BASE_URL.replace('http://', 'https://');
-}
-
+// Usamos o prefixo configurado no vite.config.ts para o microsserviço de Gestão
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: '/api-gestao',
   headers: {
     'Content-Type': 'application/json',
   },
