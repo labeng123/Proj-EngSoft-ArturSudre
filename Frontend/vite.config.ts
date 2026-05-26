@@ -28,24 +28,24 @@ export default defineConfig({
   },
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
-server: {
+  // --- CONFIGURAÇÃO DE SERVIDOR (PROXY) ---
+  server: {
     proxy: {
-      // 1. Roteamento para o Microsserviço de GESTÃO
+      // Roteamento para o Microsserviço de GESTÃO
       '/api-gestao': {
-        target: 'https://gestaomod2.azurewebsites.net', // Substitua pela URL real da Gestão
+        target: 'http://gestaomod2.azurewebsites.net', 
         changeOrigin: true,
         secure: false,
-        // Isso remove o "-gestao" antes de bater no seu main.py, para que o FastAPI entenda a rota
         rewrite: (path) => path.replace(/^\/api-gestao/, '/api')
       },
       
-      // 2. Roteamento para o Microsserviço de INGESTÃO
+      // Roteamento para o Microsserviço de INGESTÃO
       '/api-ingestao': {
         target: 'https://ingestaomod2.azurewebsites.net',
         changeOrigin: true,
         secure: false,
-        // Isso remove o "-ingestao" antes de bater no main.py da Azure
         rewrite: (path) => path.replace(/^\/api-ingestao/, '/api')
       }
     }
   }
+})
