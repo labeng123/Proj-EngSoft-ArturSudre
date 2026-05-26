@@ -26,7 +26,7 @@ export default function Projects() {
     setIsLoading(true);
     try {
       const data = await gestaoApi.getProjetos();
-      setProjetos(data);
+      setProjetos(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error('Erro ao carregar projetos');
     } finally {

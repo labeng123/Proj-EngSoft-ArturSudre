@@ -1,9 +1,15 @@
 import axios from 'axios';
 import type { Projeto, ProjetoCreate, DeleteResponse } from '../types';
 
-// Usamos o prefixo configurado no vite.config.ts para o microsserviço de Gestão
+let API_BASE_URL = import.meta.env.VITE_GESTAO_API_URL || 'http://localhost:8001';
+
+// Garante que URLs em produção não usem HTTP para evitar erro de Mixed Content
+if (API_BASE_URL.includes('azurewebsites.net') && API_BASE_URL.startsWith('http://')) {
+  API_BASE_URL = API_BASE_URL.replace('http://', 'https://');
+}
+
 const api = axios.create({
-  baseURL: '/api-gestao',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -14,7 +20,7 @@ export const gestaoApi = {
   async getProjetos(): Promise<Projeto[]> {
     try {
       const response = await api.get<Projeto[]>('/api/projetos/');
-      return response.data;
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('Error fetching projects:', error);
       // Return mock data for development/preview

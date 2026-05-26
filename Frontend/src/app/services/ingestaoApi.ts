@@ -1,9 +1,15 @@
 import axios from 'axios';
 import type { Arquivo, ArquivoUploadResponse, Pasta, PastaCreate } from '../types';
 
-// Usamos o prefixo configurado no vite.config.ts para o microsserviço de Ingestão
+let API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'http://localhost:8002';
+
+// Garante que URLs em produção não usem HTTP para evitar erro de Mixed Content
+if (API_BASE_URL.includes('azurewebsites.net') && API_BASE_URL.startsWith('http://')) {
+  API_BASE_URL = API_BASE_URL.replace('http://', 'https://');
+}
+
 const api = axios.create({
-  baseURL: '/api-ingestao',
+  baseURL: API_BASE_URL,
 });
 
 export const ingestaoApi = {
@@ -11,7 +17,7 @@ export const ingestaoApi = {
   async getArquivosPorProjeto(projetoId: number): Promise<Arquivo[]> {
     try {
       const response = await api.get<Arquivo[]>(`/api/getarquivos/projeto/${projetoId}`);
-      return response.data;
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error(`Error fetching files for project ${projetoId}:`, error);
       // Return mock data for development/preview
@@ -49,8 +55,7 @@ export const ingestaoApi = {
 
   // Get download URL for a file
   getDownloadUrl(projetoId: number, arquivoId: number): string {
-    // Atualizado para usar o prefixo correto do proxy
-    return `/api-ingestao/arquivos/download/${projetoId}/${arquivoId}`;
+    return `${API_BASE_URL}/api/arquivos/download/${projetoId}/${arquivoId}`;
   },
 
   // Download file (triggers browser download)
@@ -89,7 +94,7 @@ export const ingestaoApi = {
   async listarPastas(projetoId: number): Promise<Pasta[]> {
     try {
       const response = await api.get<Pasta[]>(`/api/pastas/${projetoId}`);
-      return response.data;
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error(`Error fetching folders for project ${projetoId}:`, error);
       return this.getMockPastas(projetoId);

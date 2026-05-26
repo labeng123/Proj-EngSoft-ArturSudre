@@ -51,8 +51,10 @@ export default function Dashboard() {
       }
 
       setProjeto(projetoData);
-      setPastas(pastasData);
-      setArquivos(arquivosData.sort((a, b) =>
+      setPastas(pastasData || []);
+      
+      const arquivosArray = Array.isArray(arquivosData) ? arquivosData : [];
+      setArquivos(arquivosArray.sort((a, b) =>
         new Date(b.data_ingestao || 0).getTime() - new Date(a.data_ingestao || 0).getTime()
       ));
     } catch (error) {
