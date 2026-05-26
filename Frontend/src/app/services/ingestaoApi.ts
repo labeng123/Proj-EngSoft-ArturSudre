@@ -1,15 +1,10 @@
 import axios from 'axios';
 import type { Arquivo, ArquivoUploadResponse, Pasta, PastaCreate } from '../types';
 
-let API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'https://ingestaomod2.azurewebsites.net';
-
-// Garante que URLs em produção não usem HTTP para evitar erro de Mixed Content
-if (API_BASE_URL.includes('azurewebsites.net') && API_BASE_URL.startsWith('http://')) {
-  API_BASE_URL = API_BASE_URL.replace('http://', 'https://');
-}
-
+// O Axios agora usará o próprio domínio do Front-end para fazer as requisições,
+// deixando o Vite intercetá-las e atuar como Proxy.
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: '',
 });
 
 export const ingestaoApi = {
@@ -55,7 +50,8 @@ export const ingestaoApi = {
 
   // Get download URL for a file
   getDownloadUrl(projetoId: number, arquivoId: number): string {
-    return `${API_BASE_URL}/api/arquivos/download/${projetoId}/${arquivoId}`;
+    // Atualizado para usar o caminho relativo
+    return `/api/arquivos/download/${projetoId}/${arquivoId}`;
   },
 
   // Download file (triggers browser download)
