@@ -3,7 +3,6 @@ import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
-
 function figmaAssetResolver() {
   return {
     name: 'figma-asset-resolver',
@@ -19,18 +18,34 @@ function figmaAssetResolver() {
 export default defineConfig({
   plugins: [
     figmaAssetResolver(),
-    // The React and Tailwind plugins are both required for Make, even if
-    // Tailwind is not being actively used – do not remove them
     react(),
     tailwindcss(),
   ],
   resolve: {
     alias: {
-      // Alias @ to the src directory
       '@': path.resolve(__dirname, './src'),
     },
   },
-
-  // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
-})
+
+server: {
+    proxy: {
+      // 1. Roteamento para o Microsserviço de GESTÃO
+      '/api-gestao': {
+        target: 'https://gestaomod2.azurewebsites.net', // Substitua pela URL real da Gestão
+        changeOrigin: true,
+        secure: false,
+        // Isso remove o "-gestao" antes de bater no seu main.py, para que o FastAPI entenda a rota
+        rewrite: (path) => path.replace(/^\/api-gestao/, '/api')
+      },
+      
+      // 2. Roteamento para o Microsserviço de INGESTÃO
+      '/api-ingestao': {
+        target: 'https://ingestaomod2.azurewebsites.net',
+        changeOrigin: true,
+        secure: false,
+        // Isso remove o "-ingestao" antes de bater no main.py da Azure
+        rewrite: (path) => path.replace(/^\/api-ingestao/, '/api')
+      }
+    }
+  }
