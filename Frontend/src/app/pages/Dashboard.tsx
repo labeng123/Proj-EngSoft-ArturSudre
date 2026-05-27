@@ -88,7 +88,7 @@ export default function Dashboard() {
       const results = await Promise.all(uploadPromises);
       // Move them to current folder if we are inside a folder
       if (currentPastaId !== null) {
-        const movePromises = results.map(res => ingestaoApi.moverArquivo(res.id, currentPastaId));
+        const movePromises = results.map(res => ingestaoApi.moverArquivo(Number(projetoId), res.id, currentPastaId));
         await Promise.all(movePromises);
       }
       toast.success(`${files.length} arquivo(s) enviado(s) com sucesso!`);
@@ -121,20 +121,23 @@ export default function Dashboard() {
 
   const handleFolderDrop = async (e: React.DragEvent, pastaId: number | null) => {
     e.preventDefault();
+    e.stopPropagation();
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
       if (!data.arquivoId) return;
 
-      await ingestaoApi.moverArquivo(data.arquivoId, pastaId);
+      await ingestaoApi.moverArquivo(Number(projetoId), data.arquivoId, pastaId);
       toast.success('Arquivo movido com sucesso!');
       loadDashboardData();
     } catch (error) {
       toast.error('Erro ao mover arquivo');
+      loadDashboardData(); // Reload anyway to update from mock storage
     }
   };
 
   const handleFolderDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
   };
 
   // Drag and Drop (Files from OS)
