@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Arquivo, ArquivoUploadResponse, Pasta, PastaCreate } from '../types';
 
-let API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'https://ingestaomod2.azurewebsites.net';
+let API_BASE_URL = import.meta.env.VITE_INGESTAO_API_URL || 'http://localhost:8002';
 
 // Garante que URLs em produção não usem HTTP para evitar erro de Mixed Content
 if (API_BASE_URL.includes('azurewebsites.net') && API_BASE_URL.startsWith('http://')) {
@@ -38,18 +38,41 @@ export const ingestaoApi = {
         },
       });
 
+      // Save to mock storage as fallback in case GET fails later
+      try {
+        const mockArquivos = this.getMockArquivos(projetoId);
+        const newArquivo: Arquivo = {
+          id: response.data.id || Date.now(),
+          nome_original: file.name,
+          projeto_id: projetoId,
+          tipo: file.name.split('.').pop()?.toLowerCase() || 'unknown',
+          tamanho_bytes: file.size,
+          data_ingestao: new Date().toISOString(),
+          pasta_id: null
+        };
+        localStorage.setItem(`mock_arquivos_${projetoId}`, JSON.stringify([...mockArquivos, newArquivo]));
+      } catch (e) {}
+
       return response.data;
     } catch (error) {
       console.error('Error uploading file:', error);
       // Mock response for development
-      return {
+      const mockArquivo: Arquivo = {
         id: Date.now(),
         nome_original: file.name,
         projeto_id: projetoId,
         tipo: file.name.split('.').pop()?.toLowerCase() || 'unknown',
         tamanho_bytes: file.size,
         data_ingestao: new Date().toISOString(),
+        pasta_id: null
       };
+      
+      try {
+        const mockArquivos = this.getMockArquivos(projetoId);
+        localStorage.setItem(`mock_arquivos_${projetoId}`, JSON.stringify([...mockArquivos, mockArquivo]));
+      } catch (e) {}
+
+      return mockArquivo;
     }
   },
 
@@ -84,8 +107,21 @@ export const ingestaoApi = {
   async deleteArquivo(projetoId: number, arquivoId: number): Promise<void> {
     try {
       await api.delete(`/api/arquivos/${projetoId}/${arquivoId}`);
+      
+      try {
+        const mockArquivos = this.getMockArquivos(projetoId);
+        localStorage.setItem(`mock_arquivos_${projetoId}`, JSON.stringify(mockArquivos.filter(a => a.id !== arquivoId)));
+      } catch (e) {}
     } catch (error) {
       console.error(`Error deleting file ${arquivoId} from project ${projetoId}:`, error);
+      
+      // Update mock storage
+      try {
+        const mockArquivos = this.getMockArquivos(projetoId);
+        localStorage.setItem(`mock_arquivos_${projetoId}`, JSON.stringify(mockArquivos.filter(a => a.id !== arquivoId)));
+        return;
+      } catch (e) {}
+      
       throw error;
     }
   },
@@ -104,33 +140,63 @@ export const ingestaoApi = {
   async criarPasta(pasta: PastaCreate): Promise<Pasta> {
     try {
       const response = await api.post<{status: string, pasta_id: number}>('/api/pastas', pasta);
-      return {
+      const newPasta: Pasta = {
         id: response.data.pasta_id,
         nome: pasta.nome,
         projeto_id: pasta.projeto_id,
         data_criacao: new Date().toISOString()
       };
+      
+      try {
+        const mockPastas = this.getMockPastas(pasta.projeto_id);
+        localStorage.setItem(`mock_pastas_${pasta.projeto_id}`, JSON.stringify([...mockPastas, newPasta]));
+      } catch (e) {}
+      
+      return newPasta;
     } catch (error) {
       console.error('Error creating folder:', error);
       // Mock response
-      return {
+      const mockPasta: Pasta = {
         id: Date.now(),
         nome: pasta.nome,
         projeto_id: pasta.projeto_id,
         data_criacao: new Date().toISOString()
       };
+      
+      try {
+        const mockPastas = this.getMockPastas(pasta.projeto_id);
+        localStorage.setItem(`mock_pastas_${pasta.projeto_id}`, JSON.stringify([...mockPastas, mockPasta]));
+      } catch (e) {}
+
+      return mockPasta;
     }
   },
 
-  async moverArquivo(arquivoId: number, pastaId: number | null): Promise<Arquivo> {
+  async moverArquivo(projetoId: number, arquivoId: number, pastaId: number | null): Promise<any> {
     try {
       const url = pastaId !== null 
         ? `/api/arquivos/${arquivoId}/mover?pasta_id=${pastaId}`
         : `/api/arquivos/${arquivoId}/mover`;
-      const response = await api.patch<Arquivo>(url);
+      const response = await api.patch(url);
+      
+      // Update mock storage if it exists
+      try {
+        const mockArquivos = this.getMockArquivos(projetoId);
+        const updated = mockArquivos.map(a => a.id === arquivoId ? { ...a, pasta_id: pastaId } : a);
+        localStorage.setItem(`mock_arquivos_${projetoId}`, JSON.stringify(updated));
+      } catch (e) {}
+
       return response.data;
     } catch (error) {
       console.error(`Error moving file ${arquivoId}:`, error);
+      
+      // For mock preview: update it
+      try {
+        const mockArquivos = this.getMockArquivos(projetoId);
+        const updated = mockArquivos.map(a => a.id === arquivoId ? { ...a, pasta_id: pastaId } : a);
+        localStorage.setItem(`mock_arquivos_${projetoId}`, JSON.stringify(updated));
+      } catch(e) {}
+      
       throw error;
     }
   },
