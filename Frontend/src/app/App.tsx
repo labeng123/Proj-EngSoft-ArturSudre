@@ -10,8 +10,6 @@ export default function App() {
   useEffect(() => {
     document.title = "Modulo 2: Ingestão"; 
   }, []);
-
-export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
