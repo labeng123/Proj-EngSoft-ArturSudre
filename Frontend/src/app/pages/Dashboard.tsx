@@ -25,11 +25,17 @@ export default function Dashboard() {
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [isDragging, setIsDragging] = useState(false);
 
-  // Folder Modal states
+  // Estados do Modal de Pasta
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
-  // GitHub Modal States
+  // Estado da Configuração de Ordenação (Nova Feature)
+  const [sortConfig, setSortConfig] = useState<{ 
+    key: 'nome_original' | 'tipo' | 'tamanho_bytes' | 'data_ingestao', 
+    direction: 'asc' | 'desc' 
+  } | null>(null);
+
+  // Estados do Modal do GitHub (Preservado)
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [githubUsername, setGithubUsername] = useState('');
   const [githubToken, setGithubToken] = useState('');
@@ -49,7 +55,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     applyFilter();
-  }, [arquivos, selectedFilter, currentPastaId]);
+  }, [arquivos, selectedFilter, currentPastaId, sortConfig]);
 
   const loadDashboardData = async () => {
     setIsLoading(true);
@@ -80,6 +86,15 @@ export default function Dashboard() {
     }
   };
 
+  // Função de Ordenação (Nova Feature)
+  const handleSort = (key: 'nome_original' | 'tipo' | 'tamanho_bytes' | 'data_ingestao') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
   const applyFilter = () => {
     let filtered = arquivos.filter(arq => 
       (arq.pasta_id === currentPastaId) || (!arq.pasta_id && currentPastaId === null)
@@ -88,9 +103,32 @@ export default function Dashboard() {
     if (selectedFilter !== 'all') {
       filtered = filtered.filter((arq) => arq.tipo === selectedFilter);
     }
+
+    // Lógica de Ordenação dinâmica
+    if (sortConfig !== null) {
+      filtered.sort((a, b) => {
+        let valA: any = a[sortConfig.key];
+        let valB: any = b[sortConfig.key];
+
+        if (sortConfig.key === 'data_ingestao') {
+          valA = new Date(valA || 0).getTime();
+          valB = new Date(valB || 0).getTime();
+        } 
+        else if (typeof valA === 'string') {
+          valA = valA.toLowerCase();
+          valB = (valB || '').toLowerCase();
+        }
+
+        if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
     setFilteredArquivos(filtered);
   };
 
+  // Upload e Arrastar Pastas (Preservados)
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
@@ -199,7 +237,7 @@ export default function Dashboard() {
     return Array.from(types) as string[];
   };
 
-  // Funções de Integração com o GitHub
+  // Lógica do GitHub Modal (Preservada)
   const handleSearchGithubUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!githubUsername.trim()) return;
@@ -257,7 +295,6 @@ export default function Dashboard() {
       toast.success(result.mensagem || 'Importação iniciada em segundo plano!');
       setIsGithubModalOpen(false);
       
-      // Inform the user that it might take a moment to see the files
       toast.info('Os arquivos aparecerão aqui assim que o processamento terminar.', { duration: 6000 });
       
     } catch (error) {
@@ -281,7 +318,7 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 dark:border-purple-400"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Carregando projeto...</p>
+          <p className="mt-4 text-gray-600 dark:text-zinc-400">Carregando projeto...</p>
         </div>
       </div>
     );
@@ -298,7 +335,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-8 py-6">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors"
+            className="flex items-center gap-2 text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-100 mb-4 transition-colors"
           >
             <ArrowLeft size={20} />
             Voltar para projetos
@@ -306,13 +343,13 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{projeto.nome}</h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">{projeto.descricao || 'Sem descrição'}</p>
+              <p className="text-gray-600 dark:text-zinc-400 mt-1">{projeto.descricao || 'Sem descrição'}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-zinc-500">
                 {arquivos.length} arquivo{arquivos.length !== 1 ? 's' : ''} total
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-zinc-500">
                 {formatFileSize(arquivos.reduce((sum, arq) => sum + arq.tamanho_bytes, 0))}
               </p>
             </div>
@@ -321,6 +358,8 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-8 py-8">
+        
+        {/* Header / Breadcrumb */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             {currentPastaId !== null ? (
@@ -333,14 +372,14 @@ export default function Dashboard() {
               >
                 <ArrowLeft size={18} />
                 <span>Raiz</span>
-                <span className="text-gray-400">/</span>
+                <span className="text-zinc-500">/</span>
                 <span className="text-gray-900 dark:text-white flex items-center gap-2">
                   <Folder size={18} className="text-purple-500" />
                   {currentPastaName}
                 </span>
               </div>
             ) : (
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Arquivos Raiz</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-100">Arquivos Raiz</h2>
             )}
           </div>
           
@@ -353,6 +392,7 @@ export default function Dashboard() {
           </button>
         </div>
 
+        {/* Listagem de Pastas */}
         {currentPastaId === null && pastas.length > 0 && (
           <div className="mb-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -367,9 +407,9 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <Folder className="text-purple-500 fill-purple-100 dark:fill-purple-900/50 flex-shrink-0" size={28} />
-                    <span className="font-medium text-gray-700 dark:text-gray-200 truncate">{pasta.nome}</span>
+                    <span className="font-medium text-gray-700 dark:text-zinc-200 truncate">{pasta.nome}</span>
                   </div>
-                  <div className="text-xs text-gray-400 dark:text-zinc-500 font-medium bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
+                  <div className="text-xs text-gray-400 dark:text-zinc-400 font-medium bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
                     {arquivos.filter(a => a.pasta_id === pasta.id).length}
                   </div>
                 </div>
@@ -389,11 +429,11 @@ export default function Dashboard() {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <Upload size={40} className="mx-auto text-gray-400 dark:text-gray-500 mb-3" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <Upload size={40} className="mx-auto text-gray-400 dark:text-zinc-500 mb-3" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100 mb-2">
             Arraste arquivos aqui ou clique para selecionar
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">Formatos aceitos: PDF, TXT, DOCX, CSV</p>
+          <p className="text-gray-600 dark:text-zinc-400 mb-4 text-sm">Formatos aceitos: PDF, TXT, DOCX, CSV</p>
           <input
             type="file"
             multiple
@@ -409,7 +449,7 @@ export default function Dashboard() {
             >
               {isUploading ? 'Enviando...' : 'Selecionar Arquivos'}
             </label>
-            <span className="text-gray-400 dark:text-gray-500 text-sm font-medium">ou</span>
+            <span className="text-gray-400 dark:text-zinc-500 text-sm font-medium">ou</span>
             <button
               onClick={() => setIsGithubModalOpen(true)}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-zinc-800 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-zinc-700 transition-colors font-medium shadow-sm"
@@ -423,13 +463,13 @@ export default function Dashboard() {
         {/* Filtros */}
         {fileTypes.length > 0 && (
           <div className="mb-6 flex items-center gap-3">
-            <Filter size={18} className="text-gray-500 dark:text-gray-400" />
+            <Filter size={18} className="text-gray-500 dark:text-zinc-400" />
             <button
               onClick={() => setSelectedFilter('all')}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors font-medium ${
                 selectedFilter === 'all'
                   ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-sm'
-                  : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700'
+                  : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700'
               }`}
             >
               Todos ({filteredArquivos.length})
@@ -441,7 +481,7 @@ export default function Dashboard() {
                 className={`px-3 py-1.5 text-sm rounded-lg transition-colors font-medium ${
                   selectedFilter === tipo
                     ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-sm'
-                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700'
+                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700'
                 }`}
               >
                 {tipo.toUpperCase()}
@@ -453,24 +493,56 @@ export default function Dashboard() {
         {/* Tabela de Arquivos */}
         {filteredArquivos.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
-            <FileText size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+            <FileText size={48} className="mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
             <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
               {selectedFilter === 'all' ? 'Nenhum arquivo nesta visualização' : `Nenhum arquivo ${selectedFilter.toUpperCase()}`}
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-gray-500 dark:text-zinc-400 text-sm">
               Faça upload de arquivos ou mova-os para cá
             </p>
           </div>
         ) : (
           <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-zinc-800">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-zinc-900/50 border-b border-gray-200 dark:border-zinc-800">
+              <thead className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-800">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Arquivo</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tipo</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tamanho</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ações</th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors select-none"
+                    onClick={() => handleSort('nome_original')}
+                  >
+                    <div className="flex items-center gap-2">
+                      Arquivo
+                      {sortConfig?.key === 'nome_original' && (sortConfig.direction === 'asc' ? ' ↑' : ' ↓')}
+                    </div>
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors select-none"
+                    onClick={() => handleSort('tipo')}
+                  >
+                    <div className="flex items-center gap-2">
+                      Tipo
+                      {sortConfig?.key === 'tipo' && (sortConfig.direction === 'asc' ? ' ↑' : ' ↓')}
+                    </div>
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors select-none"
+                    onClick={() => handleSort('tamanho_bytes')}
+                  >
+                    <div className="flex items-center gap-2">
+                      Tamanho
+                      {sortConfig?.key === 'tamanho_bytes' && (sortConfig.direction === 'asc' ? ' ↑' : ' ↓')}
+                    </div>
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors select-none"
+                    onClick={() => handleSort('data_ingestao')}
+                  >
+                    <div className="flex items-center gap-2">
+                      Data
+                      {sortConfig?.key === 'data_ingestao' && (sortConfig.direction === 'asc' ? ' ↑' : ' ↓')}
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-zinc-800">
@@ -485,16 +557,16 @@ export default function Dashboard() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{getFileIcon(arquivo.tipo)}</span>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">{arquivo.nome_original}</span>
+                        <span className="font-medium text-gray-900 dark:text-zinc-100">{arquivo.nome_original}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 rounded-md text-xs font-bold uppercase tracking-wide">
+                      <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-md text-xs font-bold uppercase tracking-wide">
                         {arquivo.tipo}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{formatFileSize(arquivo.tamanho_bytes)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{formatDate(arquivo.data_ingestao)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-zinc-400">{formatFileSize(arquivo.tamanho_bytes)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-zinc-400">{formatDate(arquivo.data_ingestao)}</td>
                     <td className="px-6 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="flex justify-end gap-2">
                         <button
@@ -533,7 +605,7 @@ export default function Dashboard() {
             </div>
             <form onSubmit={handleCreateFolder}>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
                   Nome da pasta
                 </label>
                 <input 
@@ -542,7 +614,7 @@ export default function Dashboard() {
                   onChange={e => setNewFolderName(e.target.value)} 
                   placeholder="Ex: Documentos Financeiros" 
                   autoFocus
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all placeholder-gray-400"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950/50 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all placeholder-gray-400 dark:placeholder-zinc-500"
                 />
               </div>
               <div className="flex justify-end gap-3">
@@ -552,7 +624,7 @@ export default function Dashboard() {
                     setIsFolderModalOpen(false);
                     setNewFolderName('');
                   }} 
-                  className="px-5 py-2.5 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
+                  className="px-5 py-2.5 text-gray-700 dark:text-zinc-300 font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
                 >
                   Cancelar
                 </button>
@@ -569,7 +641,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modal GitHub Importação */}
+      {/* Modal GitHub Importação (Restaurado) */}
       {isGithubModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-3xl p-6 border border-gray-200 dark:border-zinc-800 max-h-[90vh] flex flex-col">
@@ -773,6 +845,7 @@ export default function Dashboard() {
   );
 }
 
+// Componente utilitário
 function ExternalLinkIcon(props: { size?: number }) {
   return (
     <svg 
