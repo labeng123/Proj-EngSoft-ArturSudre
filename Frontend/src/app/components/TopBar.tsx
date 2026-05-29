@@ -14,7 +14,7 @@ export function TopBar() {
     {
       name: "Ingestão",
       icon: UploadCloud,
-      url: "/", // Este é o projeto atual, logo leva para a home local
+      url: "/",
       isExternal: false
     },
     {
@@ -50,12 +50,11 @@ export function TopBar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/90 shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90 shadow-sm">
       <div className="flex h-16 w-full items-center px-4 overflow-x-auto no-scrollbar">
         <nav className="flex items-center gap-2 sm:gap-6 min-w-max mx-auto">
           {navLinks.map((link, idx) => {
             const Icon = link.icon;
-            // Se for o projeto atual (Ingestão), destacamos um pouco e não abre em nova guia
             const isActive = link.name === "Ingestão";
 
             return (
@@ -65,9 +64,9 @@ export function TopBar() {
                 target={link.isExternal ? "_blank" : "_self"}
                 rel={link.isExternal ? "noopener noreferrer" : ""}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive 
-                    ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" 
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                  isActive
+                    ? "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 }`}
                 title={link.name}
               >

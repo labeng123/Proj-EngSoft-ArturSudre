@@ -93,26 +93,26 @@ export default function Projects() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Carregando projetos...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 dark:border-purple-400"></div>
+          <p className="mt-4 text-gray-600 dark:text-zinc-400">Carregando projetos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Meus Projetos</h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">Gerencie seus projetos de ingestão de arquivos</p>
+            <p className="text-gray-600 dark:text-zinc-400 mt-2">Gerencie seus projetos de ingestão de arquivos</p>
           </div>
           <button
             onClick={() => handleOpenModal('create')}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg hover:shadow-xl"
+            className="flex items-center gap-2 px-6 py-3 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors shadow-lg hover:shadow-xl"
           >
             <Plus size={20} />
             Novo Projeto
@@ -120,13 +120,13 @@ export default function Projects() {
         </div>
 
         {projetos.length === 0 ? (
-          <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <FolderOpen size={64} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">Nenhum projeto encontrado</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">Crie seu primeiro projeto para começar</p>
+          <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
+            <FolderOpen size={64} className="mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-zinc-200 mb-2">Nenhum projeto encontrado</h2>
+            <p className="text-gray-500 dark:text-zinc-400 mb-6">Crie seu primeiro projeto para começar</p>
             <button
               onClick={() => handleOpenModal('create')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
             >
               <Plus size={20} />
               Criar Projeto
@@ -137,15 +137,15 @@ export default function Projects() {
             {projetos.map((projeto) => (
               <div
                 key={projeto.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 p-6 cursor-pointer border border-gray-100 dark:border-gray-700 group"
+                className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 p-6 cursor-pointer border border-gray-100 dark:border-zinc-800 group"
                 onClick={() => navigate(`/dashboard/${projeto.id}`)}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                       {projeto.nome}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-zinc-400">
                       Criado {formatDate(projeto.data_criacao)}
                     </p>
                   </div>
@@ -155,7 +155,7 @@ export default function Projects() {
                         e.stopPropagation();
                         handleOpenModal('edit', projeto);
                       }}
-                      className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                      className="p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
                       title="Editar"
                     >
                       <Edit2 size={18} />
@@ -173,12 +173,12 @@ export default function Projects() {
                   </div>
                 </div>
 
-                <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">
+                <p className="text-gray-600 dark:text-zinc-300 text-sm line-clamp-2 mb-4">
                   {projeto.descricao || 'Sem descrição'}
                 </p>
 
-                <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
+                  <span className="text-xs text-gray-500 dark:text-zinc-500">
                     Atualizado {formatDate(projeto.ultima_alteracao)}
                   </span>
                 </div>
@@ -190,14 +190,14 @@ export default function Projects() {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl max-w-md w-full p-6 border border-zinc-800">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               {modalMode === 'create' ? 'Novo Projeto' : 'Editar Projeto'}
             </h2>
 
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
                   Nome do Projeto *
                 </label>
                 <input
@@ -206,14 +206,14 @@ export default function Projects() {
                   onChange={(e) =>
                     setCurrentProject({ ...currentProject, nome: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent placeholder-gray-400 dark:placeholder-zinc-500"
                   placeholder="Digite o nome do projeto"
                   required
                 />
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
                   Descrição
                 </label>
                 <textarea
@@ -221,7 +221,7 @@ export default function Projects() {
                   onChange={(e) =>
                     setCurrentProject({ ...currentProject, descricao: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent resize-none placeholder-gray-400 dark:placeholder-zinc-500"
                   rows={4}
                   placeholder="Descrição opcional do projeto"
                 />
@@ -231,13 +231,13 @@ export default function Projects() {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                  className="flex-1 px-4 py-2 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
                 >
                   {modalMode === 'create' ? 'Criar' : 'Salvar'}
                 </button>
