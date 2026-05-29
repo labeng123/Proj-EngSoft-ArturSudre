@@ -172,6 +172,16 @@ export const ingestaoApi = {
     }
   },
 
+  // NOVA FUNÇÃO: Deletar pasta
+  async deletePasta(projetoId: number, pastaId: number): Promise<void> {
+    try {
+      await api.delete(`/api/pastas/${pastaId}`);
+    } catch (error) {
+      console.error(`Error deleting folder ${pastaId}:`, error);
+      throw error;
+    }
+  },
+
   async moverArquivo(projetoId: number, arquivoId: number, pastaId: number | null): Promise<any> {
     try {
       const url = pastaId !== null 
