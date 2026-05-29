@@ -45,7 +45,7 @@ src/app/
 
 ## 🔌 Integração com Backend
 
-### API de Gestão (http://localhost:8001)
+### API de Gestão (http://gestaomod2.azurewebsites.net)
 
 ```typescript
 // Endpoints implementados
@@ -55,7 +55,7 @@ PUT    /api/projetos/{id}          // Atualizar projeto
 DELETE /api/projetos/{id}          // Excluir projeto
 ```
 
-### API de Ingestão (http://localhost:8002)
+### API de Ingestão (http://ingestaomod2.azurewebsites.net)
 
 ```typescript
 // Endpoints implementados
