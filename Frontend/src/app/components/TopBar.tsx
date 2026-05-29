@@ -44,7 +44,7 @@ export function TopBar() {
     {
       name: "Consulta",
       icon: Search,
-      url: "SUBSTITUIR_URL_CONSULTA",
+      url: "https://docai-frontend-7wym.onrender.com/",
       isExternal: true
     }
   ];
