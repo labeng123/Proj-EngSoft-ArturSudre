@@ -20,25 +20,25 @@ export function TopBar() {
     {
       name: "Projetos e Usuários",
       icon: Users,
-      url: "SUBSTITUIR_URL_PROJETOS_E_USUARIOS",
+      url: "https://gerenciamento-projetos-users-e9fffgewdxe6gkfe.centralus-01.azurewebsites.net/#/login",
       isExternal: true
     },
     {
       name: "Relatórios",
       icon: BarChart,
-      url: "SUBSTITUIR_URL_RELATORIOS",
+      url: "https://moduloderelatorios.azurewebsites.net",
       isExternal: true
     },
     {
       name: "Apresentações",
       icon: Presentation,
-      url: "SUBSTITUIR_URL_APRESENTACOES",
+      url: "https://modulo4-apresentacoes-v2.azurewebsites.net/docs",
       isExternal: true
     },
     {
       name: "Diagramas e Doc. Técnicos",
       icon: BookOpen,
-      url: "SUBSTITUIR_URL_DIAGRAMAS_E_DOCUMENTOS",
+      url: "https://modulo5-interface-e-nuvem.azurewebsites.net/",
       isExternal: true
     },
     {
