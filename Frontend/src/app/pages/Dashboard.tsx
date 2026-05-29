@@ -29,13 +29,13 @@ export default function Dashboard() {
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
-  // Estado da Configuração de Ordenação (Nova Feature)
+  // Estado da Configuração de Ordenação
   const [sortConfig, setSortConfig] = useState<{ 
     key: 'nome_original' | 'tipo' | 'tamanho_bytes' | 'data_ingestao', 
     direction: 'asc' | 'desc' 
   } | null>(null);
 
-  // Estados do Modal do GitHub (Preservado)
+  // Estados do Modal do GitHub
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [githubUsername, setGithubUsername] = useState('');
   const [githubToken, setGithubToken] = useState('');
@@ -86,7 +86,7 @@ export default function Dashboard() {
     }
   };
 
-  // Função de Ordenação (Nova Feature)
+  // Função de Ordenação
   const handleSort = (key: 'nome_original' | 'tipo' | 'tamanho_bytes' | 'data_ingestao') => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -104,7 +104,6 @@ export default function Dashboard() {
       filtered = filtered.filter((arq) => arq.tipo === selectedFilter);
     }
 
-    // Lógica de Ordenação dinâmica
     if (sortConfig !== null) {
       filtered.sort((a, b) => {
         let valA: any = a[sortConfig.key];
@@ -128,7 +127,6 @@ export default function Dashboard() {
     setFilteredArquivos(filtered);
   };
 
-  // Upload e Arrastar Pastas (Preservados)
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
@@ -163,6 +161,22 @@ export default function Dashboard() {
       loadDashboardData();
     } catch (error) {
       toast.error('Erro ao criar pasta');
+    }
+  };
+
+  // NOVA FUNÇÃO: Deletar Pasta
+  const handleDeletePasta = async (pasta: Pasta) => {
+    if (window.confirm(`Deseja realmente excluir a pasta "${pasta.nome}"? Os arquivos dentro dela serão movidos para a raiz.`)) {
+      try {
+        await ingestaoApi.deletePasta(Number(projetoId), pasta.id!);
+        toast.success('Pasta excluída com sucesso!');
+        if (currentPastaId === pasta.id) {
+          setCurrentPastaId(null);
+        }
+        loadDashboardData();
+      } catch (error) {
+        toast.error('Erro ao excluir pasta');
+      }
     }
   };
 
@@ -237,7 +251,7 @@ export default function Dashboard() {
     return Array.from(types) as string[];
   };
 
-  // Lógica do GitHub Modal (Preservada)
+  // Funções do GitHub Modal
   const handleSearchGithubUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!githubUsername.trim()) return;
@@ -409,8 +423,23 @@ export default function Dashboard() {
                     <Folder className="text-purple-500 fill-purple-100 dark:fill-purple-900/50 flex-shrink-0" size={28} />
                     <span className="font-medium text-gray-700 dark:text-zinc-200 truncate">{pasta.nome}</span>
                   </div>
-                  <div className="text-xs text-gray-400 dark:text-zinc-400 font-medium bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
-                    {arquivos.filter(a => a.pasta_id === pasta.id).length}
+                  
+                  {/* SEÇÃO DA PASTA ATUALIZADA COM O LIXO */}
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-gray-400 dark:text-zinc-400 font-medium bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
+                      {arquivos.filter(a => a.pasta_id === pasta.id).length}
+                    </div>
+                    
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePasta(pasta);
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                      title="Excluir Pasta"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -641,7 +670,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modal GitHub Importação (Restaurado) */}
+      {/* Modal GitHub Importação */}
       {isGithubModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-3xl p-6 border border-gray-200 dark:border-zinc-800 max-h-[90vh] flex flex-col">
@@ -661,7 +690,6 @@ export default function Dashboard() {
             </div>
 
             <div className="flex-1 overflow-y-auto pr-2 no-scrollbar">
-              {/* Passo 1: Buscar Usuário */}
               <form onSubmit={handleSearchGithubUser} className="mb-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -704,7 +732,6 @@ export default function Dashboard() {
                 </div>
               </form>
 
-              {/* Passo 2: Listagem de Repositórios */}
               {!selectedRepo && githubRepos.length > 0 && (
                 <div className="animate-in fade-in slide-in-from-bottom-2">
                   <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
@@ -732,7 +759,6 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* Passo 3: Detalhes do Repositório Selecionado */}
               {selectedRepo && (
                 <div className="animate-in fade-in slide-in-from-right-4">
                   <div className="flex items-center justify-between mb-4 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-900/50">
@@ -760,7 +786,6 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                      {/* Branches */}
                       <div className="border border-gray-200 dark:border-zinc-800 rounded-xl p-4 bg-white dark:bg-zinc-900/50">
                         <h5 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-zinc-800">
                           <GitBranch size={16} className="text-purple-500" />
@@ -789,7 +814,6 @@ export default function Dashboard() {
                         </ul>
                       </div>
 
-                      {/* PRs */}
                       <div className="border border-gray-200 dark:border-zinc-800 rounded-xl p-4 bg-white dark:bg-zinc-900/50">
                         <h5 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-zinc-800">
                           <GitPullRequest size={16} className="text-purple-500" />
@@ -845,7 +869,7 @@ export default function Dashboard() {
   );
 }
 
-// Componente utilitário
+// Componente utilitário do ícone
 function ExternalLinkIcon(props: { size?: number }) {
   return (
     <svg 
