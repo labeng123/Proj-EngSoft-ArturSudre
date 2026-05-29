@@ -32,9 +32,11 @@ export default function Dashboard() {
   // GitHub Modal States
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [githubUsername, setGithubUsername] = useState('');
+  const [githubToken, setGithubToken] = useState('');
   const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([]);
   const [isSearchingRepos, setIsSearchingRepos] = useState(false);
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string>('main');
   const [repoBranches, setRepoBranches] = useState<GitHubBranch[]>([]);
   const [repoPRs, setRepoPRs] = useState<GitHubPR[]>([]);
   const [isLoadingRepoDetails, setIsLoadingRepoDetails] = useState(false);
@@ -228,6 +230,9 @@ export default function Dashboard() {
       ]);
       setRepoBranches(branches);
       setRepoPRs(prs);
+      if (branches.length > 0) {
+        setSelectedBranch(branches[0].nome);
+      }
     } catch (error) {
       toast.error(`Erro ao carregar detalhes do repositório ${repo.nome}`);
     } finally {
@@ -240,30 +245,24 @@ export default function Dashboard() {
     
     setIsUploading(true);
     try {
-      const exportData = {
-        metadata: {
-          fonte: 'GitHub',
-          usuario: githubUsername,
-          repositorio: selectedRepo.nome,
-          data_importacao: new Date().toISOString()
-        },
-        repositorio: selectedRepo,
-        branches: repoBranches,
-        pull_requests: repoPRs
+      const payload = {
+        owner: githubUsername,
+        repo: selectedRepo.nome,
+        projeto_id: Number(projetoId),
+        branch: selectedBranch,
+        token: githubToken || undefined
       };
 
-      const fileContent = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([fileContent], { type: 'application/json' });
-      const file = new File([blob], `github-${selectedRepo.nome}-metadados.json`, { type: 'application/json' });
-
-      // O DataTransfer permite simular um FileList
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(file);
-      
+      const result = await githubApi.importarRepositorio(payload);
+      toast.success(result.mensagem || 'Importação iniciada em segundo plano!');
       setIsGithubModalOpen(false);
-      await handleFileUpload(dataTransfer.files);
+      
+      // Inform the user that it might take a moment to see the files
+      toast.info('Os arquivos aparecerão aqui assim que o processamento terminar.', { duration: 6000 });
+      
     } catch (error) {
-      toast.error('Erro ao gerar arquivo de importação do GitHub');
+      toast.error('Erro ao solicitar importação do GitHub');
+    } finally {
       setIsUploading(false);
     }
   };
@@ -271,8 +270,10 @@ export default function Dashboard() {
   const resetGithubModal = () => {
     setIsGithubModalOpen(false);
     setGithubUsername('');
+    setGithubToken('');
     setGithubRepos([]);
     setSelectedRepo(null);
+    setSelectedBranch('main');
   };
 
   if (isLoading) {
@@ -589,28 +590,45 @@ export default function Dashboard() {
 
             <div className="flex-1 overflow-y-auto pr-2 no-scrollbar">
               {/* Passo 1: Buscar Usuário */}
-              <form onSubmit={handleSearchGithubUser} className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Nome de Usuário (GitHub)
-                </label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input 
-                      type="text" 
-                      value={githubUsername} 
-                      onChange={e => setGithubUsername(e.target.value)} 
-                      placeholder="Ex: luanapavanelli" 
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all placeholder-gray-400"
-                    />
+              <form onSubmit={handleSearchGithubUser} className="mb-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Nome de Usuário (GitHub) *
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <input 
+                        type="text" 
+                        value={githubUsername} 
+                        onChange={e => setGithubUsername(e.target.value)} 
+                        placeholder="Ex: luanapavanelli" 
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all placeholder-gray-400"
+                        required
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      disabled={isSearchingRepos || !githubUsername.trim()}
+                      className="px-6 py-3 bg-gray-900 hover:bg-gray-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 disabled:opacity-50 text-white font-medium rounded-xl transition-colors shadow-sm flex items-center gap-2"
+                    >
+                      {isSearchingRepos ? <Loader2 size={18} className="animate-spin" /> : 'Buscar'}
+                    </button>
                   </div>
-                  <button 
-                    type="submit" 
-                    disabled={isSearchingRepos || !githubUsername.trim()}
-                    className="px-6 py-3 bg-gray-900 hover:bg-gray-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 disabled:opacity-50 text-white font-medium rounded-xl transition-colors shadow-sm flex items-center gap-2"
-                  >
-                    {isSearchingRepos ? <Loader2 size={18} className="animate-spin" /> : 'Buscar'}
-                  </button>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
+                    <span>Token do GitHub <span className="text-xs text-gray-500 font-normal">(opcional)</span></span>
+                  </label>
+                  <input 
+                    type="password" 
+                    value={githubToken} 
+                    onChange={e => setGithubToken(e.target.value)} 
+                    placeholder="ghp_..." 
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all placeholder-gray-400 text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Forneça um token se precisar baixar arquivos de repositórios privados.</p>
                 </div>
               </form>
 
@@ -678,12 +696,24 @@ export default function Dashboard() {
                         </h5>
                         <ul className="space-y-2 max-h-48 overflow-y-auto pr-2 no-scrollbar">
                           {repoBranches.map(b => (
-                            <li key={b.nome} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 py-1 px-2 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-md">
-                              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                            <li 
+                              key={b.nome} 
+                              onClick={() => setSelectedBranch(b.nome)}
+                              className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg cursor-pointer transition-colors border ${
+                                selectedBranch === b.nome 
+                                  ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-medium' 
+                                  : 'bg-transparent border-transparent hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-gray-300'
+                              }`}
+                            >
+                              <div className={`w-3 h-3 rounded-full flex items-center justify-center border ${
+                                selectedBranch === b.nome ? 'border-purple-500' : 'border-gray-300 dark:border-zinc-600'
+                              }`}>
+                                {selectedBranch === b.nome && <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />}
+                              </div>
                               {b.nome}
                             </li>
                           ))}
-                          {repoBranches.length === 0 && <li className="text-sm text-gray-400 italic">Nenhuma branch</li>}
+                          {repoBranches.length === 0 && <li className="text-sm text-gray-400 italic px-2">Nenhuma branch</li>}
                         </ul>
                       </div>
 
@@ -728,12 +758,12 @@ export default function Dashboard() {
               </button>
               <button 
                 type="button" 
-                disabled={!selectedRepo || isLoadingRepoDetails}
+                disabled={!selectedRepo || isLoadingRepoDetails || isUploading}
                 onClick={handleImportRepoData}
                 className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors shadow-sm"
               >
-                <Database size={18} />
-                Importar Metadados (JSON)
+                {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Database size={18} />}
+                {isUploading ? 'Processando...' : 'Importar Arquivos'}
               </button>
             </div>
           </div>

@@ -21,6 +21,14 @@ export interface GitHubPR {
   autor: string;
 }
 
+export interface ImportarRepoDTO {
+  owner: string;
+  repo: string;
+  projeto_id: number;
+  branch?: string;
+  token?: string;
+}
+
 export const githubApi = {
   listarRepositorios: async (usuario: string): Promise<GitHubRepo[]> => {
     const response = await api.get(`/repositorios/${usuario}`);
@@ -32,6 +40,10 @@ export const githubApi = {
   },
   listarPRs: async (usuario: string, repositorio: string): Promise<GitHubPR[]> => {
     const response = await api.get(`/repositorios/${usuario}/${repositorio}/prs`);
+    return response.data;
+  },
+  importarRepositorio: async (data: ImportarRepoDTO): Promise<{ status: string; mensagem: string }> => {
+    const response = await api.post('/api/github/importar', data);
     return response.data;
   }
 };
